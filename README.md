@@ -133,7 +133,7 @@ $
 
 ### Technologies Used
 * Language: Python3
-* Operating System: Ubuntu 14.04 LTS (Trusty64)
+* Operating System: Ubuntu 20.04 LTS (Trusty64)
 * Style: PEP8 Ver. 1.7
 ---
 
