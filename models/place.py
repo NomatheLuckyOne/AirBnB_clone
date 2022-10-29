@@ -1,14 +1,10 @@
 #!/usr/bin/python3
-"""
-Class Place inherits from BaseModel
-"""
+'''This module creates a Place class'''
 from models.base_model import BaseModel
 
 
 class Place(BaseModel):
-    """
-    This class has public attributes
-    """
+    '''Class for managing place objects'''
     city_id = ""
     user_id = ""
     name = ""
@@ -20,3 +16,7 @@ class Place(BaseModel):
     latitude = 0.0
     longitude = 0.0
     amenity_ids = []
+
+    def __init__(self, *args, **kwargs):
+        '''Initializes attributes for the place class'''
+        super().__init__(*args, **kwargs)
