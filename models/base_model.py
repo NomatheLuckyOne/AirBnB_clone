@@ -1,54 +1,71 @@
 #!/usr/bin/python3
-"""This script is the base model"""
+
+
+""" Base module """
 import uuid
-import datetime
-from models import storage
+from datetime import datetime
+# import the variable storage
+import models
 
 
-class BaseModel():
-    ''''Class from which all other classes will inherit'''
+class BaseModel:
+    """ class for all other classes to inherit from """
 
     def __init__(self, *args, **kwargs):
-        '''Initializes instance attributes'''
-
-        if len(kwargs) == 0:
-            self.id = str(uuid.uuid4())
-            self.created_at = datetime.datetime.now()
-            self.updated_at = datetime.datetime.now()
-            storage.new(self)
-        else:
-            for key in kwargs.keys():
-                # check and escape the __class__ key
-                if key == "__class__":
+        """Constructor and re-create an instance with
+        this dictionary representation"""
+        if len(kwargs) > 0:
+            # each key of this dictionary is an attribute name
+            # each value of this dictionary is the value of this attribute name
+            for key, value in kwargs.items():
+                if key == "updated_at":
+                    # Convert string date to datetime object
+                    # strptime (string parse time): Parse a string into a -
+                    # datetime object given a corresponding format
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                elif key == "created_at":
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                elif key == "__class__":
+                    # This happens because __class__ is not mandatory in output
                     continue
-                else:
-                    # check and change the format for updated_at & created_at
-                    if key == "updated_at" or key == "created_at":
-                        kwargs[key] = datetime.datetime.strptime(
-                            kwargs[key], "%Y-%m-%dT%H:%M:%S.%f")
-                    # set the attributes of the instance
-                    setattr(self, key, kwargs[key])
-                # self.key = kwargs[key]
-                # print(f"{key}: {kwargs[key]}")
+
+                setattr(self, key, value)
+        else:
+            # Generate a random UUID
+            self.id = str(uuid.uuid4())
+            # assign with the current datetime when an instance is created
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
+            # if it’s a new instance add a call to the method new(self) on stge
+            models.storage.new(self)
 
     def __str__(self):
-        '''Returns official string representation'''
-        return (f"[{self.__class__.__name__}] ({self.id}) \
-{str(self.__dict__)}")
+        """Overriding the __str__ method that returns a custom
+        string object"""
+        # Old-style: self.__class__.__name__
+        class_name = type(self).__name__
+        mssg = "[{0}] ({1}) {2}".format(class_name, self.id, self.__dict__)
+        return (mssg)
 
+    # Public instance methods
     def save(self):
-        '''updates the public instance attribute updated_at'''
-        storage.save()
-        self.updated_at = datetime.datetime.now()
+        """Updates the public instance attribute updated_at with
+        the current datetime """
+        self.updated_at = datetime.now()
+        models.storage.save()
 
     def to_dict(self):
-        '''returns a dictionary containing all keys/values of __dict__'''
-        object_dict = {}
-        for key in self.__dict__.keys():
-            if key not in ('created_at', 'updated_at'):
-                object_dict[key] = self.__dict__[key]
+        """returns a dictionary containing all keys/values
+        of __dict__ of the instance."""
+        # Define a dictionary and key __class__ that add to this dictionary
+        # with the class name of the object
+        tdic = {}
+        tdic["__class__"] = type(self).__name__
+        # loop over dict items and validate created_at and updated_at to
+        # convert in ISO format
+        for var, value in self.__dict__.items():
+            if isinstance(value, datetime):
+                tdic[var] = value.isoformat()
             else:
-                object_dict[key] = datetime.datetime.isoformat(
-                    self.__dict__[key])
-        object_dict['__class__'] = self.__class__.__name__
-        return (object_dict)
+                tdic[var] = value
+        return (tdic)
